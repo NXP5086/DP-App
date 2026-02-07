@@ -1,9 +1,11 @@
 import { View, Text } from "react-native";
 
-export default function SupportScreen() {
+export default function Support() {
   return (
-    <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-      <Text>SupportScreen</Text>
+    <View style={{ flex: 1, padding: 16 }}>
+      <Text>FAQs</Text>
+      <Text>Terms</Text>
+      <Text>Privacy Policy</Text>
     </View>
   );
 }

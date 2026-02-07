@@ -4,7 +4,9 @@ import AuthStack from "./AuthStack";
 import TripTabs from "./TripTabs";
 
 export default function RootNavigator() {
-  const hasActiveTrip = false; // TEMP: hardcoded
+  const hasActiveTrip = useTripStore((s) => !!s.activeTripId);
+  
+  import { useTripStore } from "../store/useTripStore";
   return (
     <NavigationContainer>
       {hasActiveTrip ? <TripTabs /> : <PublicTabs />}
