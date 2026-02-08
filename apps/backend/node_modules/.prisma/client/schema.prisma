@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ContactRequest {
+  id                String   @id @default(uuid())
+  name              String
+  contactMethod     String
+  note              String?
+  interestType      String
+  interestTitle     String
+  anonymousSession  String
+  createdAt         DateTime @default(now())
+}
+
+model Trip {
+  id          String          @id @default(uuid())
+  title       String
+  location    String
+  startDate   DateTime
+  endDate     DateTime
+  joinCode    String          @unique
+  organizerId String
+  organizer   User            @relation("OrganizerTrips", fields: [organizerId], references: [id])
+  guests      TripGuest[]
+  timeline    TimelineItem[]
+  documents   Document[]
+  createdAt   DateTime        @default(now())
+}
+
+model TripGuest {
+  id        String   @id @default(uuid())
+  tripId    String
+  userId    String
+  trip      Trip     @relation(fields: [tripId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  joinedAt  DateTime @default(now())
+
+  @@unique([tripId, userId])
+}
+
+model TimelineItem {
+  id          String   @id @default(uuid())
+  tripId      String
+  date        DateTime
+  title       String
+  description String?
+  visibility  String
+  createdAt   DateTime @default(now())
+
+  Trip Trip @relation(fields: [tripId], references: [id])
+}
+
+model Document {
+  id          String   @id @default(uuid())
+  tripId      String
+  fileName    String
+  uploadedBy  String
+  createdAt   DateTime @default(now())
+
+  Trip Trip @relation(fields: [tripId], references: [id])
+}
+
+model ConciergeMessage {
+  id        String   @id @default(uuid())
+  tripId    String
+  userId    String
+  sender    String
+  body      String
+  createdAt DateTime @default(now())
+}
+
+model User {
+  id             String      @id @default(uuid())
+  email          String      @unique
+  name           String?
+  role           Role
+  organizedTrips Trip[]      @relation("OrganizerTrips")
+  tripJoins      TripGuest[]
+  createdAt      DateTime    @default(now())
+}
+
+enum Role {
+  GUEST
+  ORGANIZER
+}

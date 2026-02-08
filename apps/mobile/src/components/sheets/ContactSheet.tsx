@@ -1,6 +1,7 @@
 import { View, Text, TextInput } from "react-native";
 import { useState } from "react";
 import { ContactMethod } from "@dp-app/types";
+import { sendContactRequest } from "../../services/api";
 
 interface Props {
   interestTitle: string;
@@ -19,18 +20,23 @@ export default function ContactSheet({
   const [method, setMethod] = useState<ContactMethod>("whatsapp");
   const [note, setNote] = useState("");
 
-  const handleSubmit = () => {
-    const payload = {
-      name,
-      contactMethod: method,
-      note,
-      interestType,
-      interestTitle,
-      anonymousSessionId,
-    };
+  const handleSubmit = async () => {
+    if (!name.trim()) return;
 
-    console.log("CONTACT REQUEST", payload);
-    onClose();
+    try {
+      await sendContactRequest({
+        name,
+        contactMethod: method,
+        note,
+        interestType,
+        interestTitle,
+        anonymousSession: anonymousSessionId,
+      });
+
+      onClose();
+    } catch (err) {
+      console.error("Failed to send contact request", err);
+    }
   };
 
   return (
@@ -50,7 +56,6 @@ export default function ContactSheet({
         Tell us how you’d like to connect.
       </Text>
 
-      {/* Name */}
       <TextInput
         placeholder="Your name"
         value={name}
@@ -64,7 +69,6 @@ export default function ContactSheet({
         }}
       />
 
-      {/* Contact Method */}
       <Text style={{ fontWeight: "500", marginBottom: 8 }}>
         Preferred contact method
       </Text>
@@ -89,7 +93,6 @@ export default function ContactSheet({
         ))}
       </View>
 
-      {/* Optional Note */}
       <TextInput
         placeholder="Anything you'd like us to know? (optional)"
         value={note}
@@ -104,7 +107,6 @@ export default function ContactSheet({
         }}
       />
 
-      {/* CTA */}
       <View
         onTouchEnd={handleSubmit}
         style={{

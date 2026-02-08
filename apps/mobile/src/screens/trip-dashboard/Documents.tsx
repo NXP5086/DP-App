@@ -1,10 +1,11 @@
 import { View, Text } from "react-native";
 import { useDocumentsStore } from "../../store/useDocumentsStore";
 import { TripDocument } from "@dp-app/types";
+import { useRole } from "../../hooks/useRole";
 
 export default function Documents() {
   const { documents, addDocument } = useDocumentsStore();
-
+  const { isOrganizer } = useRole();
   const handleUpload = () => {
     // TEMP: file picker + backend later
     addDocument({
@@ -29,7 +30,7 @@ export default function Documents() {
         }}
       >
         <Text style={{ color: "#fff", fontWeight: "600" }}>
-          Upload Document
+          {isOrganizer ? "Upload Document for Guests" : "Upload Document"}
         </Text>
       </View>
 

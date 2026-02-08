@@ -1,0 +1,7 @@
+{
+  "name": "dp-app",
+  "private": true,
+  "dependencies": {
+    "@babel/runtime": "^7.28.6"
+  }
+}

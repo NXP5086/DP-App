@@ -1,6 +1,9 @@
 import { View, Text, ScrollView } from "react-native";
-import { mockTimeline } from "./mockTimeline";
 import { TimelineItem } from "@dp-app/types";
+import { fetchTimeline } from "../../services/api";
+import { useTripStore } from "../../store/useTripStore";
+import { useEffect, useState } from "react";
+import { useRole } from "../../hooks/useRole";
 
 /**
  * Guest view only for now
@@ -8,28 +11,41 @@ import { TimelineItem } from "@dp-app/types";
  */
 
 export default function Overview() {
-  const grouped = groupByDate(
-    mockTimeline.filter((item) => item.visibility === "guest")
-  );
+  const tripId = useTripStore((s) => s.activeTripId);
+  const [items, setItems] = useState<TimelineItem[]>([]);
+  const { isOrganizer } = useRole();
+
+  useEffect(() => {
+    if (!tripId) return;
+
+    fetch(`${API_BASE_URL}/trips/${tripId}/timeline`)
+      .then((res) => res.json())
+      .then(setItems)
+      .catch((err) => console.error("Timeline fetch failed", err));
+  }, [tripId]);
+
+  const grouped = groupByDate(items);
 
   return (
     <ScrollView style={{ flex: 1, padding: 16 }}>
-      {/* Organizer Notes (placeholder) */}
-      <View
-        style={{
-          padding: 16,
-          backgroundColor: "#f7f7f7",
-          borderRadius: 12,
-          marginBottom: 24,
-        }}
-      >
-        <Text style={{ fontWeight: "600", marginBottom: 4 }}>
-          Organizer Notes
-        </Text>
-        <Text>
-          Important information from your planning team will appear here.
-        </Text>
-      </View>
+      {/* Organizer Notes */}
+      {isOrganizer && (
+        <View
+          style={{
+            padding: 16,
+            backgroundColor: "#f7f7f7",
+            borderRadius: 12,
+            marginBottom: 24,
+          }}
+        >
+          <Text style={{ fontWeight: "600", marginBottom: 4 }}>
+            Organizer Notes
+          </Text>
+          <Text>
+            Internal planning notes and reminders.
+          </Text>
+        </View>
+      )}
 
       {/* Timeline */}
       {Object.keys(grouped).map((date) => (

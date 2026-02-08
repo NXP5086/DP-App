@@ -1,16 +1,28 @@
-import { View, Text, TextInput } from "react-native";
+import { View, Text, TextInput, Pressable, Alert } from "react-native";
 import { useState } from "react";
+import { useNavigation } from "@react-navigation/native";
 import { useTripStore } from "../../store/useTripStore";
 
 export default function JoinTrip() {
   const [code, setCode] = useState("");
   const joinTrip = useTripStore((s) => s.joinTrip);
+  const navigation = useNavigation<any>();
+  const [loading, setLoading] = useState(false);
 
-  const handleJoin = () => {
-    if (!code) return;
+  const handleJoin = async () => {
+    if (!code || loading) return;
 
-    // TEMP: backend validation later
-    joinTrip(code.toLowerCase());
+    setLoading(true);
+    try {
+      await joinTrip(code.toLowerCase());
+      // Navigate to trips list after successful join
+      navigation.navigate("MyTripsHome");
+    } catch (err: any) {
+      console.error("Join trip failed", err);
+      Alert.alert("Could not join trip", err?.message || "Unknown error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -37,19 +49,21 @@ export default function JoinTrip() {
         }}
       />
 
-      <View
-        onTouchEnd={handleJoin}
-        style={{
+      <Pressable
+        onPress={handleJoin}
+        disabled={loading}
+        style={({ pressed }) => ({
           padding: 16,
           borderRadius: 12,
           backgroundColor: "#000",
           alignItems: "center",
-        }}
+          opacity: loading || pressed ? 0.6 : 1,
+        })}
       >
         <Text style={{ color: "#fff", fontWeight: "600" }}>
-          Join Trip
+          {loading ? "Joining…" : "Join Trip"}
         </Text>
-      </View>
+      </Pressable>
     </View>
   );
 }

@@ -1,8 +1,10 @@
-import { View, Text, ScrollView } from "react-native";
+import { View, Text, ScrollView, Pressable, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { useAuthStore } from "../../store/useAuthStore";
 
 export default function ProfileHome() {
   const navigation = useNavigation<any>();
+  const logout = useAuthStore((s) => s.logout);
 
   return (
     <ScrollView style={{ flex: 1, padding: 16 }}>
@@ -26,7 +28,7 @@ export default function ProfileHome() {
         onPress={() => navigation.navigate("TravelPreferences")}
       />
 
-      {/* Contact Information Box */}
+      {/* Contact Information */}
       <View
         style={{
           marginTop: 32,
@@ -37,9 +39,6 @@ export default function ProfileHome() {
       >
         <Text style={{ fontSize: 16, fontWeight: "600", marginBottom: 8 }}>
           Need to talk to us?
-        </Text>
-        <Text style={{ marginBottom: 12 }}>
-          We’re happy to help.
         </Text>
 
         <ContactRow label="WhatsApp" value="+1 234 567 890" />
@@ -55,17 +54,84 @@ export default function ProfileHome() {
       </View>
 
       {/* Log Out */}
-      <View style={{ marginTop: 32 }}>
-        <Text style={{ color: "#555" }}>Log Out</Text>
-      </View>
+      <Pressable
+        onPress={() =>
+          Alert.alert(
+            "Log out",
+            "Are you sure you want to log out?",
+            [
+              { text: "Cancel", style: "cancel" },
+              {
+                text: "Log out",
+                style: "destructive",
+                onPress: async () => {
+                  try {
+                    await logout();
+                    Alert.alert("Logged out", "You have been logged out.", [
+                      {
+                        text: "OK",
+                        onPress: () => navigation.navigate("Explore"),
+                      },
+                    ]);
+                  } catch (err) {
+                    console.error("Logout failed", err);
+                    Alert.alert("Logout failed", "Please try again.");
+                  }
+                },
+              },
+            ]
+          )
+        }
+        style={{ marginTop: 32 }}
+      >
+        <Text style={{ fontSize: 16, color: "#555" }}>
+          Log Out
+        </Text>
+      </Pressable>
 
       {/* Delete Account */}
-      <View style={{ marginTop: 16 }}>
-        <Text style={{ color: "red" }}>Delete Account</Text>
-      </View>
+      <Pressable
+        onPress={() =>
+          Alert.alert(
+            "Delete account",
+            "This will permanently delete your account and all associated data. This action cannot be undone.",
+            [
+              { text: "Cancel", style: "cancel" },
+              {
+                text: "Delete",
+                style: "destructive",
+                onPress: async () => {
+                  try {
+                    // TODO: call backend delete account endpoint when available
+                    await logout();
+                    Alert.alert("Account deleted", "Your account has been deleted.", [
+                      {
+                        text: "OK",
+                        onPress: () => navigation.navigate("Explore"),
+                      },
+                    ]);
+                  } catch (err) {
+                    console.error("Account deletion failed", err);
+                    Alert.alert("Delete failed", "Please try again.");
+                  }
+                },
+              },
+            ]
+          )
+        }
+        style={{ marginTop: 16 }}
+      >
+        <Text style={{ fontSize: 16, color: "red" }}>
+          Delete Account
+        </Text>
+      </Pressable>
     </ScrollView>
   );
 }
+
+/* ============================
+   UI COMPONENTS
+============================ */
 
 function Section({
   title,
@@ -77,25 +143,34 @@ function Section({
   onPress?: () => void;
 }) {
   return (
-    <View
-      onTouchEnd={onPress}
+    <Pressable
+      onPress={onPress}
+      disabled={!onPress}
       style={{
         paddingVertical: 16,
         borderBottomWidth: 1,
         borderBottomColor: "#eee",
       }}
     >
-      <Text style={{ fontSize: 16, fontWeight: "500" }}>{title}</Text>
+      <Text style={{ fontSize: 16, fontWeight: "500" }}>
+        {title}
+      </Text>
       {subtitle && (
         <Text style={{ fontSize: 13, color: "#666", marginTop: 4 }}>
           {subtitle}
         </Text>
       )}
-    </View>
+    </Pressable>
   );
 }
 
-function ContactRow({ label, value }: { label: string; value: string }) {
+function ContactRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
   return (
     <View style={{ marginBottom: 8 }}>
       <Text style={{ fontWeight: "500" }}>{label}</Text>

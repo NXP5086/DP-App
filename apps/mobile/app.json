@@ -1,6 +1,15 @@
 {
   "expo": {
     "scheme": "dpapp",
-    "deepLinks": true
+    "deepLinks": true,
+    "name": "DP App",
+    "slug": "dp-app",
+    "ios": {
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
+      }
+    }
   }
 }

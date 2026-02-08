@@ -1,6 +1,7 @@
 import { View, Text } from "react-native";
 import { useTravelStore } from "../../store/useTravelStore";
 import { Flight } from "@dp-app/types";
+import { useRole } from "../../hooks/useRole";
 
 export default function Travel() {
   const { flights, transfer, addFlight, removeFlight } =
@@ -8,6 +9,7 @@ export default function Travel() {
 
   const arrival = flights.find((f) => f.type === "arrival");
   const departure = flights.find((f) => f.type === "departure");
+  const { isOrganizer } = useRole();
 
   return (
     <View style={{ flex: 1, padding: 16 }}>
