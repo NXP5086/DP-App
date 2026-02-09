@@ -17,6 +17,7 @@ interface TripState {
 
   loadTrips: () => Promise<void>;
   clearTrips: () => void;
+  clearError: () => void;
   joinTrip: (code: string) => Promise<void>;
 }
 
@@ -42,6 +43,10 @@ export const useTripStore = create<TripState>((set) => ({
 
   clearTrips: () => {
     set({ trips: [], loading: false, error: null });
+  },
+
+  clearError: () => {
+    set({ error: null });
   },
 
   joinTrip: async (code: string) => {

@@ -1,5 +1,6 @@
 import { View, Text, ScrollView, TextInput } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const CATEGORIES = [
   "Honeymoon",
@@ -17,9 +18,10 @@ const DESTINATIONS = [
 
 export default function ExploreHome() {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
 
   return (
-    <ScrollView style={{ flex: 1, padding: 16 }}>
+    <ScrollView style={{ flex: 1, padding: 16, paddingTop: insets.top + 16 }}>
       {/* Search */}
       <TextInput
         placeholder="Find your next trip idea"

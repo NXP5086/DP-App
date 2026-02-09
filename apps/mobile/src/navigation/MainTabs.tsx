@@ -25,7 +25,7 @@ function TripsNavigator() {
 ------------------------------ */
 export default function MainTabs() {
   return (
-    <Tab.Navigator>
+    <Tab.Navigator screenOptions={{ headerShown: false }}>
       <Tab.Screen
         name="MyTrips"
         component={TripsNavigator}

@@ -47,10 +47,14 @@ function TripsStack() {
 
 export default function LoggedInTabs() {
   return (
-    <Tab.Navigator>
+    <Tab.Navigator screenOptions={{ headerShown: false }}>
       <Tab.Screen name="Explore" component={ExploreStack} />
       <Tab.Screen name="Weddings" component={WeddingsStack} />
-      <Tab.Screen name="MyTrips" component={TripsStack} />
+      <Tab.Screen
+        name="MyTrips"
+        component={TripsStack}
+        options={{ title: "My Trips" }}
+      />
       <Tab.Screen name="Profile" component={ProfileStack} />
     </Tab.Navigator>
   );

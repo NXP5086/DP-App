@@ -23,6 +23,9 @@ let TripsController = class TripsController {
         this.prisma = prisma;
     }
     async createTrip(req, body) {
+        if (!body.title || !body.location || !body.startDate || !body.endDate) {
+            throw new common_1.BadRequestException("Missing required fields");
+        }
         const joinCode = (0, crypto_1.randomBytes)(4).toString("hex");
         const trip = await this.prisma.trip.create({
             data: {
@@ -44,24 +47,79 @@ let TripsController = class TripsController {
         const role = req.user.role;
         if (role === roles_enum_1.Role.ORGANIZER) {
             return this.prisma.trip.findMany({
-                where: {
-                    organizerId: userId,
-                },
-                orderBy: {
-                    createdAt: "desc",
-                },
+                where: { organizerId: userId },
+                orderBy: { createdAt: "desc" },
             });
         }
         return this.prisma.trip.findMany({
             where: {
                 guests: {
-                    some: {
-                        userId,
-                    },
+                    some: { userId },
                 },
             },
+            orderBy: { createdAt: "desc" },
+        });
+    }
+    async getTimeline(req, tripId) {
+        const userId = req.user.userId;
+        const role = req.user.role;
+        const trip = await this.prisma.trip.findFirst({
+            where: {
+                id: tripId,
+                OR: [
+                    { organizerId: userId },
+                    {
+                        guests: {
+                            some: { userId },
+                        },
+                    },
+                ],
+            },
+        });
+        if (!trip) {
+            throw new common_1.ForbiddenException("You are not part of this trip");
+        }
+        const visibilityFilter = role === roles_enum_1.Role.ORGANIZER
+            ? undefined
+            : {
+                in: ["ALL", "GUEST"],
+            };
+        return this.prisma.timelineItem.findMany({
+            where: {
+                tripId,
+                ...(visibilityFilter && {
+                    visibility: visibilityFilter,
+                }),
+            },
             orderBy: {
-                createdAt: "desc",
+                date: "asc",
+            },
+        });
+    }
+    async createTimelineItem(req, tripId, body) {
+        const { date, title, description, visibility } = body;
+        if (!date || !title || !visibility) {
+            throw new common_1.BadRequestException("Missing required fields");
+        }
+        if (!["ORGANIZER", "GUEST", "ALL"].includes(visibility)) {
+            throw new common_1.BadRequestException("Invalid visibility value");
+        }
+        const trip = await this.prisma.trip.findFirst({
+            where: {
+                id: tripId,
+                organizerId: req.user.userId,
+            },
+        });
+        if (!trip) {
+            throw new common_1.ForbiddenException("You do not own this trip");
+        }
+        return this.prisma.timelineItem.create({
+            data: {
+                tripId,
+                date: new Date(date),
+                title,
+                description,
+                visibility,
             },
         });
     }
@@ -83,6 +141,24 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], TripsController.prototype, "myTrips", null);
+__decorate([
+    (0, common_1.Get)(":tripId/timeline"),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)("tripId")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], TripsController.prototype, "getTimeline", null);
+__decorate([
+    (0, common_1.Post)(":tripId/timeline"),
+    (0, roles_decorator_1.Roles)(roles_enum_1.Role.ORGANIZER),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)("tripId")),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, Object]),
+    __metadata("design:returntype", Promise)
+], TripsController.prototype, "createTimelineItem", null);
 exports.TripsController = TripsController = __decorate([
     (0, common_1.Controller)("trips"),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService])

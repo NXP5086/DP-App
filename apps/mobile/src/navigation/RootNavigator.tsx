@@ -5,13 +5,12 @@ import { useAuthStore } from "../store/useAuthStore";
 import LoggedInTabs from "./LoggedInTabs";
 import LoggedOutTabs from "./LoggedOutTabs";
 import AuthStack from "./AuthStack";
+import TripDashboard from "../screens/trips/TripDashboard";
 
 const Stack = createNativeStackNavigator();
 
 export default function RootNavigator() {
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
-
-  // debug logging removed to avoid frequent console overhead
 
   return (
     <NavigationContainer>
@@ -21,6 +20,9 @@ export default function RootNavigator() {
           name="Main"
           component={isLoggedIn ? LoggedInTabs : LoggedOutTabs}
         />
+
+        {/* TRIP DASHBOARD (full screen, no tabs) */}
+        <Stack.Screen name="TripDashboard" component={TripDashboard} />
 
         {/* AUTH MODAL */}
         <Stack.Screen

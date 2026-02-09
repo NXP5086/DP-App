@@ -12,4 +12,11 @@ export declare class TripsController {
         joinCode: string;
     }>;
     myTrips(req: any): Promise<import(".prisma/client").Trip[]>;
+    getTimeline(req: any, tripId: string): Promise<import(".prisma/client").TimelineItem[]>;
+    createTimelineItem(req: any, tripId: string, body: {
+        date: string;
+        title: string;
+        description?: string;
+        visibility: "ORGANIZER" | "GUEST" | "ALL";
+    }): Promise<import(".prisma/client").TimelineItem>;
 }

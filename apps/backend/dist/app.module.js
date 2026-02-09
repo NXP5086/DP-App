@@ -14,12 +14,15 @@ const trips_module_1 = require("./trips/trips.module");
 const prisma_service_1 = require("./prisma.service");
 const jwt_guard_1 = require("./auth/jwt.guard");
 const roles_guard_1 = require("./auth/roles.guard");
+const documents_module_1 = require("./documents/documents.module");
+const concierge_module_1 = require("./concierge/concierge.module");
+const travel_module_1 = require("./travel/travel.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
-        imports: [auth_module_1.AuthModule, trips_module_1.TripsModule],
+        imports: [auth_module_1.AuthModule, trips_module_1.TripsModule, documents_module_1.DocumentsModule, concierge_module_1.ConciergeModule, travel_module_1.TravelModule],
         providers: [
             prisma_service_1.PrismaService,
             {

@@ -30,6 +30,7 @@ model Trip {
   guests      TripGuest[]
   timeline    TimelineItem[]
   documents   Document[]
+  travelItems TravelItem[]
   createdAt   DateTime        @default(now())
 }
 
@@ -57,13 +58,15 @@ model TimelineItem {
 }
 
 model Document {
-  id          String   @id @default(uuid())
-  tripId      String
-  fileName    String
-  uploadedBy  String
-  createdAt   DateTime @default(now())
+  id              String              @id @default(uuid())
+  tripId          String
+  uploadedById    String
+  uploadedByRole  Role
+  visibility      DocumentVisibility
+  fileName        String
+  createdAt       DateTime            @default(now())
 
-  Trip Trip @relation(fields: [tripId], references: [id])
+  trip            Trip                @relation(fields: [tripId], references: [id])
 }
 
 model ConciergeMessage {
@@ -82,10 +85,64 @@ model User {
   role           Role
   organizedTrips Trip[]      @relation("OrganizerTrips")
   tripJoins      TripGuest[]
+  travelItems    TravelItem[]
   createdAt      DateTime    @default(now())
+}
+
+model TravelItem {
+  id        String     @id @default(uuid())
+  tripId    String
+  userId    String
+  type      TravelType
+
+  flightDirection FlightDirection?
+  airline           String?
+  flightNumber      String?
+  departureDateTime DateTime?
+  arrivalDateTime   DateTime?
+
+  hotelName String?
+  roomNumber String?
+  checkIn    DateTime?
+  checkOut   DateTime?
+
+  airportDepartureDateTime DateTime?
+  hotelDepartureDateTime   DateTime?
+  transferType             TransferType?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  trip Trip @relation(fields: [tripId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([tripId])
+  @@index([userId])
+}
+
+enum FlightDirection {
+  ARRIVAL
+  DEPARTURE
+}
+
+enum TravelType {
+  FLIGHT
+  STAY
+  TRANSFER
+}
+
+enum TransferType {
+  SHARED
+  PRIVATE
+  OTHER
 }
 
 enum Role {
   GUEST
   ORGANIZER
+}
+
+enum DocumentVisibility {
+  PRIVATE
+  SHARED
 }

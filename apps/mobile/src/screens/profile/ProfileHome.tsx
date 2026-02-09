@@ -1,16 +1,22 @@
 import { View, Text, ScrollView, Pressable, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuthStore } from "../../store/useAuthStore";
 
 export default function ProfileHome() {
   const navigation = useNavigation<any>();
   const logout = useAuthStore((s) => s.logout);
+  const insets = useSafeAreaInsets();
 
   return (
-    <ScrollView style={{ flex: 1, padding: 16 }}>
+    <ScrollView
+      style={{ flex: 1 }}
+      contentContainerStyle={{ padding: 16, paddingTop: insets.top + 16, paddingBottom: 40 }}
+    >
       {/* Saved */}
       <Section
         title="Saved"
+        subtitle="View items you've saved for later"
         onPress={() => navigation.navigate("Saved")}
       />
 
@@ -28,15 +34,15 @@ export default function ProfileHome() {
         onPress={() => navigation.navigate("TravelPreferences")}
       />
 
-      {/* Contact Information */}
-      <View
-        style={{
-          marginTop: 32,
-          padding: 16,
-          borderRadius: 12,
-          backgroundColor: "#f7f7f7",
-        }}
-      >
+      {/* Contact Information + actions (moved down together) */}
+      <View style={{ marginTop: 160 }}>
+        <View
+          style={{
+            padding: 16,
+            borderRadius: 12,
+            backgroundColor: "#f7f7f7",
+          }}
+        >
         <Text style={{ fontSize: 16, fontWeight: "600", marginBottom: 8 }}>
           Need to talk to us?
         </Text>
@@ -44,13 +50,6 @@ export default function ProfileHome() {
         <ContactRow label="WhatsApp" value="+1 234 567 890" />
         <ContactRow label="Call" value="+1 234 567 890" />
         <ContactRow label="Email" value="hello@yourcompany.com" />
-      </View>
-
-      {/* Support */}
-      <View style={{ marginTop: 32 }}>
-        <Section title="FAQs" />
-        <Section title="Terms" />
-        <Section title="Privacy" />
       </View>
 
       {/* Log Out */}
@@ -82,12 +81,19 @@ export default function ProfileHome() {
             ]
           )
         }
-        style={{ marginTop: 32 }}
+        style={{ marginTop: 32, alignItems: "center" }}
       >
         <Text style={{ fontSize: 16, color: "#555" }}>
           Log Out
         </Text>
       </Pressable>
+
+      {/* Support (horizontal) */}
+      <View style={{ marginTop: 24, flexDirection: "row", justifyContent: "space-between" }}>
+        <SupportButton title="FAQs" />
+        <SupportButton title="Terms" />
+        <SupportButton title="Privacy" />
+      </View>
 
       {/* Delete Account */}
       <Pressable
@@ -119,12 +125,13 @@ export default function ProfileHome() {
             ]
           )
         }
-        style={{ marginTop: 16 }}
+        style={{ marginTop: 16, alignItems: "center" }}
       >
         <Text style={{ fontSize: 16, color: "red" }}>
           Delete Account
         </Text>
       </Pressable>
+      </View>
     </ScrollView>
   );
 }
@@ -176,5 +183,31 @@ function ContactRow({
       <Text style={{ fontWeight: "500" }}>{label}</Text>
       <Text>{value}</Text>
     </View>
+  );
+}
+
+function SupportButton({
+  title,
+  onPress,
+}: {
+  title: string;
+  onPress?: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={!onPress}
+      style={{
+        flex: 1,
+        marginHorizontal: 6,
+        paddingVertical: 12,
+        paddingHorizontal: 8,
+        borderRadius: 10,
+        backgroundColor: "#f7f7f7",
+        alignItems: "center",
+      }}
+    >
+      <Text style={{ fontSize: 14, fontWeight: "500" }}>{title}</Text>
+    </Pressable>
   );
 }

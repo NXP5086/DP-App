@@ -1,6 +1,7 @@
 import { View, Text, FlatList, Pressable } from "react-native";
 import { useEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useTripStore } from "../../store/useTripStore";
 import { useRole } from "../../hooks/useRole";
@@ -9,6 +10,7 @@ export default function MyTripsHome() {
   const navigation = useNavigation<any>();
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
   const { isOrganizer } = useRole();
+  const insets = useSafeAreaInsets();
 
   const { trips, loading, error, loadTrips } = useTripStore();
 
@@ -26,7 +28,7 @@ export default function MyTripsHome() {
   ------------------------------ */
   if (!isLoggedIn) {
     return (
-      <View style={{ flex: 1, padding: 24, justifyContent: "center" }}>
+      <View style={{ flex: 1, padding: 24, paddingTop: insets.top + 24, justifyContent: "center" }}>
         <Text style={{ fontSize: 20, fontWeight: "600", marginBottom: 12 }}>
           Your trips live here
         </Text>
@@ -56,7 +58,7 @@ export default function MyTripsHome() {
   ------------------------------ */
   if (loading) {
     return (
-      <View style={{ flex: 1, padding: 24 }}>
+      <View style={{ flex: 1, padding: 24, paddingTop: insets.top + 24 }}>
         <Text>Loading your trips…</Text>
       </View>
     );
@@ -67,7 +69,7 @@ export default function MyTripsHome() {
   ------------------------------ */
   if (error) {
     return (
-      <View style={{ flex: 1, padding: 24 }}>
+      <View style={{ flex: 1, padding: 24, paddingTop: insets.top + 24 }}>
         <Text>{error}</Text>
       </View>
     );
@@ -78,7 +80,7 @@ export default function MyTripsHome() {
   ------------------------------ */
   if (trips.length === 0) {
     return (
-      <View style={{ flex: 1, padding: 24 }}>
+      <View style={{ flex: 1, padding: 24, paddingTop: insets.top + 24 }}>
         <Text style={{ marginBottom: 16 }}>
           {isOrganizer
             ? "Trips you’re organizing will appear here once they’re created."
@@ -102,15 +104,19 @@ export default function MyTripsHome() {
     <FlatList
       data={trips}
       keyExtractor={(item) => item.id}
-      contentContainerStyle={{ padding: 24 }}
+      contentContainerStyle={{ padding: 24, paddingTop: insets.top + 24 }}
       renderItem={({ item }) => (
-        <View
-          style={{
+        <Pressable
+          onPress={() =>
+            navigation.navigate("TripDashboard", { trip: item })
+          }
+          style={({ pressed }) => ({
             padding: 16,
             borderRadius: 12,
             backgroundColor: "#f5f5f5",
             marginBottom: 12,
-          }}
+            opacity: pressed ? 0.8 : 1,
+          })}
         >
           <Text style={{ fontSize: 16, fontWeight: "600" }}>
             {item.title}
@@ -124,7 +130,7 @@ export default function MyTripsHome() {
             {new Date(item.startDate).toDateString()} →{" "}
             {new Date(item.endDate).toDateString()}
           </Text>
-        </View>
+        </Pressable>
       )}
     />
   );

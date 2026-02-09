@@ -15,37 +15,92 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DocumentsController = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma.service");
+const roles_enum_1 = require("../auth/roles.enum");
+const client_1 = require("@prisma/client");
 let DocumentsController = class DocumentsController {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async list(tripId) {
-        return this.prisma.document.findMany({
-            where: { tripId },
+    async uploadDocument(req, tripId, body) {
+        const { userId, role } = req.user;
+        const trip = await this.prisma.trip.findFirst({
+            where: {
+                id: tripId,
+                OR: [
+                    { organizerId: userId },
+                    { guests: { some: { userId } } },
+                ],
+            },
+        });
+        if (!trip) {
+            throw new common_1.ForbiddenException("No access to this trip");
+        }
+        const visibility = role === roles_enum_1.Role.ORGANIZER
+            ? body.visibility ?? client_1.DocumentVisibility.PRIVATE
+            : client_1.DocumentVisibility.PRIVATE;
+        return this.prisma.document.create({
+            data: {
+                tripId,
+                fileName: body.fileName,
+                uploadedById: userId,
+                uploadedByRole: role,
+                visibility,
+            },
         });
     }
-    async upload(tripId, body) {
-        return this.prisma.document.create({
-            data: { ...body, tripId },
+    async getDocuments(req, tripId) {
+        const { userId, role } = req.user;
+        const trip = await this.prisma.trip.findFirst({
+            where: {
+                id: tripId,
+                OR: [
+                    { organizerId: userId },
+                    { guests: { some: { userId } } },
+                ],
+            },
+        });
+        if (!trip) {
+            throw new common_1.ForbiddenException("No access to this trip");
+        }
+        if (role === roles_enum_1.Role.ORGANIZER) {
+            return this.prisma.document.findMany({
+                where: {
+                    tripId,
+                    uploadedByRole: roles_enum_1.Role.ORGANIZER,
+                },
+                orderBy: { createdAt: "desc" },
+            });
+        }
+        return this.prisma.document.findMany({
+            where: {
+                tripId,
+                OR: [
+                    { uploadedById: userId },
+                    { visibility: client_1.DocumentVisibility.SHARED },
+                ],
+            },
+            orderBy: { createdAt: "desc" },
         });
     }
 };
 exports.DocumentsController = DocumentsController;
 __decorate([
-    (0, common_1.Get)(),
-    __param(0, (0, common_1.Param)("tripId")),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", Promise)
-], DocumentsController.prototype, "list", null);
-__decorate([
     (0, common_1.Post)(),
-    __param(0, (0, common_1.Param)("tripId")),
-    __param(1, (0, common_1.Body)()),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)("tripId")),
+    __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [Object, String, Object]),
     __metadata("design:returntype", Promise)
-], DocumentsController.prototype, "upload", null);
+], DocumentsController.prototype, "uploadDocument", null);
+__decorate([
+    (0, common_1.Get)(),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)("tripId")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], DocumentsController.prototype, "getDocuments", null);
 exports.DocumentsController = DocumentsController = __decorate([
     (0, common_1.Controller)("trips/:tripId/documents"),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService])

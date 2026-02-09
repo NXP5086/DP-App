@@ -1,46 +1,43 @@
 import { create } from "zustand";
 import { ConciergeMessage } from "@dp-app/types";
+import {
+  fetchConciergeMessages,
+  sendConciergeMessage as apiSendMessage,
+} from "../services/api";
 
 interface ConciergeState {
   messages: ConciergeMessage[];
-  sendMessage: (body: string) => void;
-  receiveMessage: (body: string) => void;
+  loading: boolean;
+  loadMessages: (tripId: string) => Promise<void>;
+  sendMessage: (tripId: string, body: string) => Promise<void>;
 }
 
 export const useConciergeStore = create<ConciergeState>((set, get) => ({
-  messages: [
-    {
-      id: "welcome",
-      sender: "concierge",
-      body:
-        "Hi! We’re here to help with anything you need during the trip. Feel free to message us anytime.",
-      createdAt: new Date().toISOString(),
-    },
-  ],
+  messages: [],
+  loading: false,
 
-  sendMessage: (body) =>
-    set({
-      messages: [
-        ...get().messages,
-        {
-          id: Date.now().toString(),
-          sender: "guest",
-          body,
-          createdAt: new Date().toISOString(),
-        },
-      ],
-    }),
+  loadMessages: async (tripId: string) => {
+    set({ loading: true });
+    try {
+      const data = await fetchConciergeMessages(tripId);
+      set({ messages: data, loading: false });
+    } catch (err) {
+      console.error("[Concierge] Failed to load messages:", err);
+      set({ loading: false });
+    }
+  },
 
-  receiveMessage: (body) =>
-    set({
-      messages: [
-        ...get().messages,
-        {
-          id: Date.now().toString(),
-          sender: "concierge",
-          body,
-          createdAt: new Date().toISOString(),
-        },
-      ],
-    }),
+  sendMessage: async (tripId: string, body: string) => {
+    set({ loading: true });
+    try {
+      const newMessage = await apiSendMessage(tripId, body);
+      set({
+        messages: [...get().messages, newMessage],
+        loading: false,
+      });
+    } catch (err) {
+      console.error("[Concierge] Failed to send message:", err);
+      set({ loading: false });
+    }
+  },
 }));

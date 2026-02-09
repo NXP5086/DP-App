@@ -1,5 +1,6 @@
 import { View, Text, ScrollView } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const WEDDINGS = [
   { id: "lake-como", title: "Lake Como Wedding" },
@@ -8,9 +9,10 @@ const WEDDINGS = [
 
 export default function WeddingsHome() {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
 
   return (
-    <ScrollView style={{ flex: 1, padding: 16 }}>
+    <ScrollView style={{ flex: 1, padding: 16, paddingTop: insets.top + 16 }}>
       <Text style={{ fontSize: 22, fontWeight: "600", marginBottom: 16 }}>
         Real Weddings
       </Text>

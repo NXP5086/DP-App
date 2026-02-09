@@ -15,38 +15,76 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConciergeController = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma.service");
+const roles_enum_1 = require("../auth/roles.enum");
 let ConciergeController = class ConciergeController {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async list(tripId) {
-        return this.prisma.conciergeMessage.findMany({
-            where: { tripId },
-            orderBy: { createdAt: "asc" },
+    async sendMessage(req, tripId, body) {
+        const { userId, role } = req.user;
+        if (!body?.message?.trim()) {
+            throw new common_1.ForbiddenException("Message is required");
+        }
+        const hasAccess = role === roles_enum_1.Role.ORGANIZER
+            ? await this.prisma.trip.findFirst({
+                where: { id: tripId, organizerId: userId },
+            })
+            : await this.prisma.tripGuest.findFirst({
+                where: { tripId, userId },
+            });
+        if (!hasAccess) {
+            throw new common_1.ForbiddenException("No access to this trip");
+        }
+        return this.prisma.conciergeMessage.create({
+            data: {
+                tripId,
+                userId,
+                sender: role,
+                body: body.message,
+            },
         });
     }
-    async send(tripId, body) {
-        return this.prisma.conciergeMessage.create({
-            data: { ...body, tripId },
+    async getMessages(req, tripId) {
+        const { userId, role } = req.user;
+        const hasAccess = role === roles_enum_1.Role.ORGANIZER
+            ? await this.prisma.trip.findFirst({
+                where: { id: tripId, organizerId: userId },
+            })
+            : await this.prisma.tripGuest.findFirst({
+                where: { tripId, userId },
+            });
+        if (!hasAccess) {
+            throw new common_1.ForbiddenException("No access to this trip");
+        }
+        return this.prisma.conciergeMessage.findMany({
+            where: {
+                tripId,
+                userId,
+            },
+            orderBy: {
+                createdAt: "asc",
+            },
         });
     }
 };
 exports.ConciergeController = ConciergeController;
 __decorate([
-    (0, common_1.Get)(),
-    __param(0, (0, common_1.Param)("tripId")),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", Promise)
-], ConciergeController.prototype, "list", null);
-__decorate([
     (0, common_1.Post)(),
-    __param(0, (0, common_1.Param)("tripId")),
-    __param(1, (0, common_1.Body)()),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)("tripId")),
+    __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [Object, String, Object]),
     __metadata("design:returntype", Promise)
-], ConciergeController.prototype, "send", null);
+], ConciergeController.prototype, "sendMessage", null);
+__decorate([
+    (0, common_1.Get)(),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)("tripId")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], ConciergeController.prototype, "getMessages", null);
 exports.ConciergeController = ConciergeController = __decorate([
     (0, common_1.Controller)("trips/:tripId/concierge"),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService])

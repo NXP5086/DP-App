@@ -5,7 +5,7 @@ import * as SecureStore from "expo-secure-store";
  * Use your machine LAN IP for iOS Simulator / physical device.
  * Must include protocol.
  */
-const API_BASE_URL = "http://192.168.1.13:3000";
+const API_BASE_URL = "http://192.168.1.14:3000";
 export const TOKEN_STORAGE_KEY = "auth_token";
 
 /**
@@ -168,4 +168,50 @@ export async function fetchMyTrips(): Promise<
 
 export async function fetchTimeline(tripId: string) {
   return request(`/trips/${tripId}/timeline`);
+}
+
+/* ============================
+   CONCIERGE
+============================ */
+
+export async function fetchConciergeMessages(tripId: string) {
+  return request(`/trips/${tripId}/concierge`);
+}
+
+export async function sendConciergeMessage(
+  tripId: string,
+  message: string
+) {
+  return request(`/trips/${tripId}/concierge`, {
+    method: "POST",
+    body: JSON.stringify({ message }),
+  });
+}
+
+/* ============================
+   TRAVEL
+============================ */
+
+export async function fetchTravel(tripId: string) {
+  return request(`/trips/${tripId}/travel`);
+}
+
+export async function createTravel(tripId: string, payload: any) {
+  return request(`/trips/${tripId}/travel`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateTravel(tripId: string, id: string, payload: any) {
+  return request(`/trips/${tripId}/travel/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function deleteTravel(tripId: string, id: string) {
+  return request(`/trips/${tripId}/travel/${id}`, {
+    method: "DELETE",
+  });
 }
