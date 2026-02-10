@@ -1,8 +1,10 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { Ionicons } from "@expo/vector-icons";
 
 import ExploreHome from "../screens/explore/ExploreHome";
 import DestinationDetail from "../screens/explore/DestinationDetail";
+import AllDestinations from "../screens/explore/AllDestinations";
 import WeddingsHome from "../screens/weddings/WeddingsHome";
 import WeddingDetail from "../screens/weddings/WeddingDetail";
 import MyTripsHome from "../screens/trips/MyTripsHome";
@@ -21,6 +23,7 @@ function ExploreStack() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="ExploreHome" component={ExploreHome} />
       <Stack.Screen name="DestinationDetail" component={DestinationDetail} />
+      <Stack.Screen name="AllDestinations" component={AllDestinations} />
     </Stack.Navigator>
   );
 }
@@ -47,15 +50,50 @@ function TripsStack() {
 
 export default function LoggedInTabs() {
   return (
-    <Tab.Navigator screenOptions={{ headerShown: false }}>
-      <Tab.Screen name="Explore" component={ExploreStack} />
-      <Tab.Screen name="Weddings" component={WeddingsStack} />
+    <Tab.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: "#F5721A",
+        tabBarInactiveTintColor: "#999",
+      }}
+    >
+      <Tab.Screen
+        name="Explore"
+        component={ExploreStack}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="compass-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Weddings"
+        component={WeddingsStack}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="diamond-outline" size={size} color={color} />
+          ),
+        }}
+      />
       <Tab.Screen
         name="MyTrips"
         component={TripsStack}
-        options={{ title: "My Trips" }}
+        options={{
+          title: "My bookings",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="briefcase-outline" size={size} color={color} />
+          ),
+        }}
       />
-      <Tab.Screen name="Profile" component={ProfileStack} />
+      <Tab.Screen
+        name="Profile"
+        component={ProfileStack}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person-outline" size={size} color={color} />
+          ),
+        }}
+      />
     </Tab.Navigator>
   );
 }
